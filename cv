@@ -1,0 +1,137 @@
+#!/bin/bash
+# Convert value from DEC, HEX, or BIN to another base.
+
+# TO-DO LIST
+# -ASCII support
+# -File input support (lists and CSV)
+# -Base64 encoding/decoding
+# -Simple ciphers? ROT13?
+
+ERRORMSG=""
+INAS=$1
+OUTAS=$2
+INPUT=$3
+BC_OBASE=0
+BC_IBASE=0
+
+#Checks the previous command ran successfully 
+function error_quit #Pass $? as arguement
+{
+	exitstatus=$1 #Grab error code from previous command
+	if [ $exitstatus -ne 0 ]; then #Was above command was successful?
+		echo "Something went wrong.  Exiting with error code: $exitstatus"
+		exit $1
+	fi
+}
+
+# Error message handling.
+function error_msg
+{
+	case "$1" in
+		quit)
+			#Replace error_quit?
+		;;
+		
+		incomplete)
+			ERRORMSG="This sript is a work in progress. The function you selected has not been completed yet."
+		;;
+		
+		rtfm)
+			ERRORMSG="Usage: cv [FROM BASE] [TO BASE] INPUT"
+	esac
+		
+		#Display Error
+		#whiptail --title "ERROR!" --msgbox "$ERRORMSG" 8 78
+		echo $ERRORMSG
+
+}
+
+# Check that options were passed at the command line
+function option_check
+{
+	if [ -z $INAS ] || [ -z $OUTAS ] || [ -z $INPUT ]; then
+		error_msg rtfm
+		exit 1
+	fi
+
+#	if [ $INAS == $OUTAS ]; then
+#		error_msg rtfm
+#		exit 1
+#	fi
+}
+
+function calcumatron
+{
+	# Convert BC_OBASE to match the input base, so it is read properly
+	BC_OBASE=$(echo "obase=$BC_IBASE;$BC_OBASE" | bc)
+
+	# Preform Conversion
+	echo "ibase=$BC_IBASE;obase=$BC_OBASE;$INPUT" | bc	
+	error_quit $?
+}
+
+
+# Begin Main
+
+option_check
+
+case "$INAS" in
+	hex)
+		BC_IBASE=16		
+	;;
+
+	bin)
+		BC_IBASE=2
+	;;
+
+	dec)
+		BC_IBASE=10
+	;;
+
+	ascii)
+		error_msg incomplete
+		exit 0
+	;;
+
+	base64)
+		error_msg incomplete
+		exit 0
+	;;
+
+	*)
+		error_msg rtfm
+		exit 1
+	;;
+esac
+
+case "$OUTAS" in
+	hex)
+		BC_OBASE=16	
+	;;
+
+	bin)
+		BC_OBASE=2
+	;;
+
+	dec)
+		BC_OBASE=10
+	;;
+
+	ascii)
+		error_msg incomplete
+		exit 0
+	;;
+
+	base64)
+		error_msg incomplete
+		exit 0
+	;;
+
+	*)
+		error_msg rtfm
+		exit 1
+	;;
+esac
+
+calcumatron
+
