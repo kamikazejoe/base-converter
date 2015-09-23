@@ -1,0 +1,71 @@
+#!/bin/bash
+# Uses tr command to do ROT13 and ROT47 conversion.
+
+# TO-DO LIST
+# -Allow any number of character shift.
+# -Add file input
+# -Decoder ring file for custom subtitutions?
+
+ERRORMSG=""
+ROT=$1
+INPUT=$2
+
+#Checks the previous command ran successfully 
+function error_quit #Pass $? as arguement
+{
+	exitstatus=$1 #Grab error code from previous command
+	if [ $exitstatus -ne 0 ]; then #Was above command was successful?
+		echo "Something went wrong.  Exiting with error code: $exitstatus"
+		exit $1
+	fi
+}
+
+# Error message handling.
+function error_msg
+{
+	case "$1" in
+		quit)
+			#Replace error_quit?
+		;;
+		
+		incomplete)
+			ERRORMSG="This sript is a work in progress. The function you selected has not been completed yet."
+		;;
+		
+		rtfm)
+			ERRORMSG="Usage: rot [ 13 || 47 ] {QUOTED TEXT}"
+	esac
+		
+		#Display Error
+		#whiptail --title "ERROR!" --msgbox "$ERRORMSG" 8 78
+		echo $ERRORMSG
+
+}
+
+# Check that options were passed at the command line
+function option_check
+{
+	if [ -z $ROT ] || [ -z "$INPUT" ]; then # Quotes around $INPUT contain it as a single string.
+		error_msg rtfm
+		exit 1
+	fi
+}
+
+# Begin Main
+
+option_check
+
+case "$ROT" in
+	13)
+		echo $INPUT | tr 'A-Za-z' 'N-ZA-Mn-za-m'
+		error_quit $?		
+	;;
+
+	47)
+		echo $INPUT | tr '\!-~' 'P-~\!-O'
+		error_quit $?
+	;;
+
+esac
+
+
