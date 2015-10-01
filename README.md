@@ -7,7 +7,14 @@ Some basic conversion scripts written for myself as busy-work.
 
 Convert value from DEC, HEX, or BIN to another base using bc command.
 
-	Usage: cv [FROM BASE] [TO BASE] INPUT_TEXT
+	Usage: cv [BASE IN] [BASE OUT] INPUT_TEXT or FILENAME
+
+Valid base inputs are:
+* DEC
+* BIN
+* HEX
+
+Input files must be a line seperated list of values.
 
 
 ### ROT ###

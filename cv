@@ -1,11 +1,14 @@
 #!/bin/bash
 # Convert value from DEC, HEX, or BIN to another base.
 
+# Recent Changes
+# +Can take a file containing a list of values as input.
+# +Command line options should now be case-insensitive (except filenames).
+
+
 # TO-DO LIST
 # -ASCII support
-# -File input support (lists and CSV)
-# -Base64 encoding/decoding
-# -Simple ciphers? ROT13?
+
 
 ERRORMSG=""
 INAS=$1
@@ -13,6 +16,18 @@ OUTAS=$2
 INPUT=$3
 BC_OBASE=0
 BC_IBASE=0
+
+function debugme # Just a dump of variables for troubleshooting.
+{	
+	echo "\$INAS:$INAS"
+	echo "\$OUTAS:$OUTAS"
+	echo "\$INPUT:$INPUT"
+	echo "\$BC_OBASE:$BC_OBASE"
+	echo "\$BC_IBASE:$BC_IBASE"
+	echo "\$FILEINPUT"
+	echo "----------"
+	echo "${FILEINPUT[*]}"
+}
 
 #Checks the previous command ran successfully 
 function error_quit #Pass $? as arguement
@@ -37,12 +52,18 @@ function error_msg
 		;;
 		
 		rtfm)
-			ERRORMSG="Usage: cv [FROM BASE] [TO BASE] INPUT"
+			ERRORMSG="
+			\n
+			Usage: cv [BASE IN] [BASE OUT] INPUT or FILENAME*\n
+			\tValid base inputs: DEC,BIN,HEX\n
+			\n
+			*Input files must be a line seperated list of values.\n
+			"
 	esac
 		
 		#Display Error
 		#whiptail --title "ERROR!" --msgbox "$ERRORMSG" 8 78
-		echo $ERRORMSG
+		echo -e $ERRORMSG
 
 }
 
@@ -54,10 +75,10 @@ function option_check
 		exit 1
 	fi
 
-#	if [ $INAS == $OUTAS ]; then
-#		error_msg rtfm
-#		exit 1
-#	fi
+	if [ -f $INPUT ]; then # True if $INPUT is a regular file.
+		mapfile -t FILEINPUT < "$INPUT" # Declares FILEINPUT array as well as inputs file into it.
+		error_quit $?
+	fi
 }
 
 function calcumatron
@@ -65,9 +86,19 @@ function calcumatron
 	# Convert BC_OBASE to match the input base, so it is read properly
 	BC_OBASE=$(echo "obase=$BC_IBASE;$BC_OBASE" | bc)
 
-	# Preform Conversion
-	echo "ibase=$BC_IBASE;obase=$BC_OBASE;$INPUT" | bc	
-	error_quit $?
+	if [ ${#FILEINPUT[@]} -ne 0 ]; then # File input
+		for AN_INPUT in ${FILEINPUT[@]}; do
+			# Preforming Conversion
+			echo "ibase=$BC_IBASE;obase=$BC_OBASE;${AN_INPUT^^}" | bc
+			# ${AN_INPUT^^} ensures the input is upper-case.  An issue if it's hex input
+			error_quit $?
+	   	done
+	
+	else	# Command-line input
+		# Preform Conversion
+		echo "ibase=$BC_IBASE;obase=$BC_OBASE;${INPUT^^}" | bc	
+		error_quit $?
+	fi
 }
 
 
@@ -75,25 +106,20 @@ function calcumatron
 
 option_check
 
-case "$INAS" in
-	hex)
+case ${INAS^^} in # ^^ evaluates $INAS as an upper-case string.
+	HEX)
 		BC_IBASE=16		
 	;;
 
-	bin)
+	BIN)
 		BC_IBASE=2
 	;;
 
-	dec)
+	DEC)
 		BC_IBASE=10
 	;;
 
-	ascii)
-		error_msg incomplete
-		exit 0
-	;;
-
-	base64)
+	ASCII)
 		error_msg incomplete
 		exit 0
 	;;
@@ -104,25 +130,20 @@ case "$INAS" in
 	;;
 esac
 
-case "$OUTAS" in
-	hex)
+case ${OUTAS^^} in
+	HEX)
 		BC_OBASE=16	
 	;;
 
-	bin)
+	BIN)
 		BC_OBASE=2
 	;;
 
-	dec)
+	DEC)
 		BC_OBASE=10
 	;;
 
-	ascii)
-		error_msg incomplete
-		exit 0
-	;;
-
-	base64)
+	ASCII)
 		error_msg incomplete
 		exit 0
 	;;
@@ -134,4 +155,5 @@ case "$OUTAS" in
 esac
 
 calcumatron
+#debugme
 
