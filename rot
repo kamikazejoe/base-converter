@@ -12,15 +12,6 @@ INPUT=$2
 CHARSET=""
 PUNESET=""
 
-function debugme
-{
-	echo "$ROT"
-	echo "$INPUT"
-	echo "$CHARSET"
-	echo "$PUNESET"
-	echo "${FILEINPUT[*]}"
-}
-
 #Checks the previous command ran successfully 
 function error_quit #Pass $? as arguement
 {
@@ -60,28 +51,24 @@ function option_check
 		error_msg rtfm
 		exit 1
 	fi
-
-	if [ -f "$INPUT" ]; then # True if $INPUT is a regular file. "" are required to handle multiple words.
-		mapfile FILEINPUT < "$INPUT" # Declares FILEINPUT array as well as inputs file into it.
-		error_quit $?
-	fi
 }
 
 function shakeit
 {
-	if [ ${#FILEINPUT[@]} -ne 0 ]; then # File input 
-		for AN_INPUT in ${FILEINPUT[@]}; do
-			echo -n $AN_INPUT | tr "$CHARSET" "$PUNESET"
-			error_quit $?
-		done
-	
+		# File input
+	if [ -f "$INPUT" ]; then
+		cat $INPUT | tr "$CHARSET" "$PUNESET"
+	# "cat" preserves formatting, vs reading a file into an array as in the previous version.
+
 	else	# Command-line input
 		echo -n $INPUT | tr "$CHARSET" "$PUNESET"
 		error_quit $?
 	fi
 }
 
-# Begin Main
+
+
+#####  Begin Main ######
 
 option_check
 
@@ -105,4 +92,4 @@ case "$ROT" in
 esac
 
 shakeit
-#debugme
+
