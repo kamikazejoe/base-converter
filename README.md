@@ -22,5 +22,5 @@ Input files must be a line seperated list of values.
 Does ROT 13 and ROT 47 encoding/decoding using tr.
 Honestly I have no idea how the REGEX works.
 
-	Usage: rot [ 13 || 47 ] {QUOTED TEXT}
+	Usage: rot [ 13 || 47 ] {QUOTED TEXT or FILENAME}
 
